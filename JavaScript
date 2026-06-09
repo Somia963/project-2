@@ -1,0 +1,39 @@
+const express = require('express');
+const app = express();
+const PORT = 3000;
+
+// Middleware to parse incoming JSON bodies (Handles user input)
+app.use(express.json());
+
+// In-memory data store
+let tasks = [
+    { id: 1, title: "Set up project environment", completed: true }
+];
+
+// 1. GET Endpoint: Fetch all tasks
+app.get('/tasks', (req, res) => {
+    res.status(200).json(tasks);
+});
+
+// 2. POST Endpoint: Create a task + Basic Data Validation
+app.post('/tasks', (req, res) => {
+    const { title } = req.body;
+
+    // Data Validation
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+        return res.status(400).json({ error: "Validation Failed: 'title' is required and must be a non-empty string." });
+    }
+
+    const newTask = {
+        id: tasks.length + 1,
+        title: title.trim(),
+        completed: false
+    };
+
+    tasks.push(newTask);
+    res.status(201).json(newTask);
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
