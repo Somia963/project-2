@@ -1,0 +1,33 @@
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
+from typing import List
+
+app = FastAPI()
+
+# In-memory data store
+tasks = [
+    {"id": 1, "title": "Set up project environment", "completed": True}
+]
+
+# Pydantic Model for automated Data Validation
+class TaskCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=100, description="The title of the task")
+
+# 1. GET Endpoint: Fetch all tasks
+@app.get("/tasks", response_model=List[dict], status_code=status.HTTP_200_OK)
+def get_tasks():
+    return tasks
+
+# 2. POST Endpoint: Create a task
+@app.post("/tasks", status_code=status.HTTP_201_CREATED)
+def create_task(task_input: TaskCreate):
+    # FastAPI automatically validates input based on the TaskCreate schema above.
+    # If 'title' is missing or empty, it automatically throws a 422 Unprocessable Entity error.
+    
+    new_task = {
+        "id": len(tasks) + 1,
+        "title": task_input.title.strip(),
+        "completed": False
+    }
+    tasks.append(new_task)
+    return new_task
